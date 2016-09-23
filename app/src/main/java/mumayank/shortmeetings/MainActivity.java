@@ -24,6 +24,9 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
+    // for testing set to true
+    private boolean fasterExecution = false;
+
     // vars
     private boolean meetingMode;
     private boolean soundLoaded = false;
@@ -56,7 +59,6 @@ public class MainActivity extends AppCompatActivity {
         bindViews();
         resetViews();
         defineOnClicks();
-        loadSound();
 
     }
 
@@ -345,15 +347,21 @@ public class MainActivity extends AppCompatActivity {
 
         playSound(false);
 
-        final int totalMillis = Integer.parseInt(timeTextView.getText().toString() + "") * 60 * 100; // TODO make it 1000
+        int divider = 1;
+        if (fasterExecution) {
+            divider = 10;
+        }
 
+        final int totalMillis = Integer.parseInt(timeTextView.getText().toString() + "") * 60 * (1000 / divider); // TODO to test, make it 10 or 100
+
+        final int finalDivider = divider;
         countDownTimer = new CountDownTimer(totalMillis, 1) {
 
             public void onTick(long millisUntilFinished) {
 
                 int roundedMillisUntilFinished = (int) (millisUntilFinished/100);
 
-                timeTextView.setText( (int) ((roundedMillisUntilFinished / 60) + 1) + "");
+                timeTextView.setText( (int) ((roundedMillisUntilFinished / (600 / finalDivider)) + 1) + "");
 
                 ViewGroup.LayoutParams layoutParams = progressLayout.getLayoutParams();
                 int deviceWidth = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getWidth();
@@ -365,6 +373,7 @@ public class MainActivity extends AppCompatActivity {
             public void onFinish() {
                 playSound(true);
                 addTimeParentLayout.setVisibility(View.VISIBLE);
+                timeTextView.setText("0");
 
                 if (meetingMode == false) {
                     nextTextView.setVisibility(View.VISIBLE);
@@ -396,6 +405,12 @@ public class MainActivity extends AppCompatActivity {
                 soundPool.pause(soundID);
             }
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        loadSound();
     }
 
     @Override
